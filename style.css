@@ -73,8 +73,12 @@ li {
   transition: all 0.2s ease;
 }
 
-
 li span:hover {
   cursor: pointer;
   color: #0d6efd;
+}
+
+filter-group button.active {
+  background-color: #0d6efd;
+  color: white;
 }

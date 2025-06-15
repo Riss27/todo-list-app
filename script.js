@@ -4,6 +4,7 @@ const list = document.getElementById("todo-list");
 const clearBtn = document.getElementById("clear-btn");
 
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let currentFilter = "all"; // <- PINDAHKAN KE SINI
 
 function saveTasks() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
@@ -11,12 +12,18 @@ function saveTasks() {
 
 function renderTasks() {
   list.innerHTML = "";
-  tasks.forEach((task, index) => {
+
+  const filteredTasks = tasks.filter(task => {
+    if (currentFilter === "completed") return task.completed;
+    if (currentFilter === "pending") return !task.completed;
+    return true;
+  });
+
+  filteredTasks.forEach((task, index) => {
     const li = document.createElement("li");
     li.className = "list-group-item d-flex justify-content-between align-items-center";
 
     const span = document.createElement("span");
-    span.textContent = task.text;
     if (task.completed) {
       span.classList.add("completed");
       span.innerHTML = `✅ <s>${task.text}</s>`;
@@ -25,7 +32,8 @@ function renderTasks() {
     }
 
     span.addEventListener("click", () => {
-      tasks[index].completed = !tasks[index].completed;
+      const originalIndex = tasks.indexOf(task);
+      tasks[originalIndex].completed = !tasks[originalIndex].completed;
       saveTasks();
       renderTasks();
     });
@@ -34,7 +42,8 @@ function renderTasks() {
     deleteBtn.className = "btn btn-sm btn-outline-danger";
     deleteBtn.textContent = "❌";
     deleteBtn.addEventListener("click", () => {
-      tasks.splice(index, 1);
+      const originalIndex = tasks.indexOf(task);
+      tasks.splice(originalIndex, 1);
       saveTasks();
       renderTasks();
     });
@@ -64,5 +73,18 @@ clearBtn.addEventListener("click", () => {
   }
 });
 
-// Render saat pertama kali load
+document.getElementById("filter-group").addEventListener("click", (e) => {
+  if (e.target.tagName === "BUTTON") {
+    currentFilter = e.target.dataset.filter;
+
+    document.querySelectorAll("#filter-group button").forEach(btn => {
+      btn.classList.remove("active");
+    });
+    e.target.classList.add("active");
+
+    renderTasks();
+  }
+});
+
+// PANGGIL SETELAH currentFilter DIDEFINISIKAN
 renderTasks();
